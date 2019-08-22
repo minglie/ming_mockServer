@@ -45,16 +45,9 @@ module.exports=(app)=>{
 
     app.post("/doSql",async function (req,res) {
         try{
-            let sqlist=req.params.sql.split(";")
-            if(sqlist.length>2){
-                for (let i=0;i<sqlist.length-1;i++){
-                    await Db.doSql(sqlist[i]);
-                }
-                res.send(M.result("ok"));
-            }else {
-                var rows= await Db.doSql(req.params.sql);
-                res.send(M.result(rows));
-            }
+             let sql=req.params.sql
+             var rows= await Db.doSql(req.params.sql);
+             res.send(M.result(rows));
         }catch (e){
             res.send(M.result(e,false));
         }
