@@ -1,0 +1,26 @@
+{
+  "name": "ming_mockServer",
+  "version": "1.0.0",
+  "description": "ming_mockServer用于在线Mock接口,支持js脚本与json两种响应",
+  "main": "src/index.js",
+  "dependencies": {
+    "ming_node": "^1.2.0",
+    "sqlite3": "^4.0.8"
+  },
+  "devDependencies": {},
+  "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "cd src && node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/minglie/ming_mockServer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/minglie/ming_mockServer/issues"
+  },
+  "homepage": "https://github.com/minglie/ming_mockServer#readme"
+}

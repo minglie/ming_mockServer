@@ -1,0 +1,343 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>index</title>
+    <link rel="stylesheet" type="text/css" href="https://minglie.github.io/public/easyui/css/easyui.css">
+    <link rel="stylesheet" type="text/css" href="https://minglie.github.io/public/easyui/css/icon.css">
+    <script src="https://minglie.github.io/public/easyui/js/jquery.min.js"></script>
+    <script src="https://minglie.github.io/js/M_mock.js"></script>
+    <script type="text/javascript" src="https://minglie.github.io/public/easyui/js/jquery.easyui.min.js"></script>
+    <script>
+        /**
+         *后台服务开始
+         */
+        M.host = "";
+        M.tableInfo = [];
+        M.currentTableName = "";
+        tableList = {};
+        M.doSql(`select sql createSql from sqlite_master where type='table'`, (d) => {
+            for (let i = 0; i < d.data.length; i++) {
+                let str = d.data[i].createSql;
+                let tableName = /CREATE TABLE (\w*)/.exec(str)[1];
+                tableList[tableName] = [];
+                str = str.substring(str.indexOf("(")).replace("(", "");
+                str = str.substring(0, str.lastIndexOf(")")).split(",");
+                str.map(d => {
+                    d = d.trim().split(" ")[0];
+                    if (d != "PRIMARY") {
+                        tableList[tableName].push(d);
+                    }
+                })
+            }
+            // console.log(tableList)
+        });
+        app.post("/listByPage", function (req, res) {
+            if (!M.currentTableName) {
+                res.send([]);
+                return;
+            }
+            const sql1 = `
+        select * from ${M.currentTableName}  limit ${(req.params.page - 1) * req.params.rows},${req.params.rows};
+        `;
+            const sql2 = ` select count(1) c from ${M.currentTableName};`;
+            M.doSql(sql1, (d) => {
+                rows = d.data;
+                M.doSql(sql2, (d) => {
+                    total = d.data[0].c;
+                    res.send({rows, total});
+                });
+            })
+        });
+        app.post("/listAllTableName", function (req, res) {
+            const sql = `select name createSql from sqlite_master where type='table';`;
+            M.doSql(sql, (d) => {
+                rows = d.data.map(u => {
+                    let o = {};
+                    o.tableName = Object.values(u)[0];
+                    return o;
+                });
+                res.send({rows});
+            })
+        });
+        app.get("/delete", function (req, res) {
+            ids = "(" + req.params.ids.toString() + ")";
+            let sql = `delete from ${M.currentTableName} where id in ${ids};`;
+            M.doSql(sql, (d) => {
+                r = d.data[0];
+                res.send(r);
+            })
+        });
+        app.post("/add", function (req, res) {
+            let o = {}
+            req.params.date.forEach((d) => {
+                o[d.name] = d.value
+            })
+            delete o.id;
+            let sql = M.Db().getInsertObjSql(M.currentTableName, o);
+            M.doSql(sql, (d) => {
+                res.send(d);
+            })
+        });
+        app.post("/createTable", function (req, res) {
+            let columArr=req.params.value.split(":")
+            if(columArr.length<2){
+                alert("格式不合法");
+                return;
+            }else if(Object.keys(tableList).indexOf(columArr[0])>=0){
+                alert(columArr[0]+"表已存在");
+                res.send("ok");
+                return;
+            }
+            let tableName=columArr[0];
+            columArr=columArr[1].split(",")
+            let sql="CREATE TABLE "+ tableName +"(id INTEGER NOT NULL,"+ columArr.map(d=>{return d.trim() +" varchar (200) DEFAULT NULL,"}).join("")+" PRIMARY KEY (id))";
+
+            M.doSql(sql, (d) => {
+                res.send(d);
+            })
+        });
+        app.post("/update", function (req, res) {
+            let o = {}
+            req.params.date.forEach((d) => {
+                o[d.name] = d.value
+            })
+            sql = M.Db().getUpdateObjSql(M.currentTableName, o, {id: o.id}) + ";";
+            M.doSql(sql, (d) => {
+                console.log(d)
+                res.send(d);
+            })
+        });
+        /**
+         *  前台js开始
+         */
+        (function () {
+            function init() {
+                var myColumns = [];
+                myColumns[0] = M.tableInfo.map(function (u) {
+                    let obj = {};
+                    obj.field = u;
+                    obj.title = u;
+                    return obj;
+                });
+                myColumns[0] = [{checkbox: true}, ... myColumns[0]];
+                $('#resourceDataGrid').datagrid({
+                    url: "/listByPage",
+                    width: 10000,
+                    rownumbers: true,//使能行号列
+                    pagination: true,//显示分页工具栏
+                    pageSize: 20,//在设置分页属性的时候初始化页面大小。
+                    pageList: [20, 30, 40, 50],//在设置分页属性的时候 初始化页面大小选择列表。
+                    rowStyler: function (rowIndex, rowData) {
+                        if (rowData.id % 2 == 0) {
+                            return "background-color:pink";
+                        }
+                    },
+                    columns: myColumns
+                });
+            }
+//页面初始化
+            $(function () {
+                init();//初始化DataGrid
+                $('#leftMeau').datagrid({
+                    url: "/listAllTableName",
+//pagination:true,//显示分页工具栏
+                    singleSelect: true,
+                    columns: [[
+                        {checkbox: false},
+                        {field: 'tableName', title: '表名', width: 200}
+                    ]],
+                    onClickRow: function (index, row) {
+                        var row = $('#leftMeau').datagrid("getSelections");
+                        M.currentTableName = row[0].tableName;
+                        M.tableInfo = tableList[M.currentTableName];
+                        init();
+                    }
+                });
+                /*添加按钮*/
+                $("#resourceDataGridToolButton [name='add']").click(
+                    () => {
+                        if (!M.currentTableName) {
+                            // 创建表
+                            $("#addDialog").dialog({
+                                title: '创建表',
+                                closable: true,
+                                width: 600,
+                                content: `
+                                        <form id="addForm" method="post">
+                                         <input name="colum" placeholder="resouce:name,age,hubby" style="width:500px"/>
+                                        </form>
+                                    `,
+                                buttons: [{
+                                    text: '确定',
+                                    iconCls: 'icon-ok',
+                                    handler: function () {
+                                        M.IO.createTable(
+                                            $("#addForm").serializeArray()[0]
+                                        )
+                                        location.reload();
+                                    }
+                                }
+                                ],
+                            });
+                            return;
+                        }
+                        let addDialogContent = tableList[M.currentTableName].map(d => {
+                            return `${d}  <input name="${d}"> <br/>`
+                        }).join("");
+                        // 创建填写审批意见对话框
+                        $("#addDialog").dialog({
+                            title: '添加数据',
+                            closable: true,
+                            width: 600,
+                            height: 500,
+                            content: `
+                                <form id="addForm" method="post">
+                                  ${addDialogContent}
+                                </form>
+                            `,
+                            buttons: [{
+                                text: '确定',
+                                iconCls: 'icon-ok',
+                                handler: function () {
+                                    M.IO.add(
+                                        {date: $("#addForm").serializeArray()}
+                                    )
+                                    $('#resourceDataGrid').datagrid('reload');// 重新载入数据
+                                    $('#addDialog').dialog("close");//关闭添加对话框
+                                }
+                            }
+                            ],
+                        });
+                    }
+                );
+
+                $("#resourceDataGridToolButton [name='update']").click(
+                    () => {
+                        if (!M.currentTableName) {
+                            alert("请选择表")
+                            return;
+                        }
+                        row = $('#resourceDataGrid').datagrid("getSelections");
+                        if (row.length == 1) {
+                            console.log("AAA", row[0])
+                        } else {
+                            $.messager.alert('我的消息', '请选择一行进行修改！', 'info');
+                            return;
+                        }
+                        let updateDialogContent = "";
+                        for (let field in row[0]) {
+
+                            console.log(row[0][field],"VVVVVVV")
+
+                            updateDialogContent += `${field} <textarea rows="1" name="${field}">${row[0][field]}</textarea> <br/>`
+                        }
+                        $("#updateDialog").dialog({
+                            title: '修改数据',
+                            closable: true,
+                            width: 600,
+                            height: 500,
+                            content: `
+                                <form id="updateForm" method="post">
+                                  ${updateDialogContent}
+                                </form>
+                            `,
+                            buttons: [{
+                                text: '确定',
+                                iconCls: 'icon-ok',
+                                handler: function () {
+                                    M.IO.update(
+                                        {date: $("#updateForm").serializeArray()}
+                                    )
+                                    $('#resourceDataGrid').datagrid('reload');// 重新载入数据
+                                    $('#updateDialog').dialog("close");//关闭对话框
+                                }
+                            }
+                            ],
+                        });
+                    }
+                );
+                /*导出mysql脚本*/
+                $("#resourceDataGridToolButton [name='downDate']").click(function() {
+                    let downDateTxt=`/*${new Date()}*/\n\n`;
+                    M.doSql(`select sql  from sqlite_master where tbl_name="${M.currentTableName}"`,(d)=>{
+                        let createTableSql=d.data[0].sql;
+                        let idIndex=createTableSql.indexOf(",");
+                        createTableSql=  createTableSql.slice(0,idIndex)+' AUTO_INCREMENT'+createTableSql.slice(idIndex)
+                        downDateTxt+="\n"+createTableSql+";\n\n\n";
+                        M.doSql(`select *  from  ${M.currentTableName}`,(d1)=>{
+                            d1.data.map(d=>{
+                                downDateTxt+=M.Db().getInsertObjSql(M.currentTableName,d)+";\n";
+                            })
+                            M.fileDownload(downDateTxt,M.currentTableName+".sql");
+                        })
+                    })
+                });
+                //DataGrid删除按钮
+                $("#resourceDataGridToolButton [name='remove']").click(function () {
+                    var row = $('#resourceDataGrid').datagrid("getSelections");
+                    if (row.length == 0) {
+                        if(M.currentTableName){
+                            M.doSql(`drop table ${M.currentTableName}`);
+                            location.reload();
+                        }else{
+                            $.messager.alert('我的消息', '请先选择删除！', 'info');
+                        }
+                    } else {
+                        $.messager.confirm('温馨提示', '确认删除选择的内容？', function (r) {
+                            if (r) {
+                                let ids = row.map(u => u.id);
+                                M.IO.delete({ids});
+                                $('#resourceDataGrid').datagrid('reload');// 重新载入数据
+                            }
+                        });
+                    }
+                });
+                //清空按钮
+                $("#resourceDataGridToolButton [name='removeAll']").click(function () {
+                    M.doSql(`delete from ${M.currentTableName};`, (d) => {
+                        location.reload()
+                    })
+                });
+
+                $("#runSqlBtn").click(function () {
+                    M.doSql(text_input.value, (d) => {
+                        text_output.value=JSON.stringify(d.data)
+                    })
+                });
+            })
+        })();
+    </script>
+
+
+</head>
+<body class="easyui-layout">
+<!-- 左边的树状菜单 -->
+<div data-options="region:'west',title:'菜单'"  style="width:200px;">
+    <table id="leftMeau"
+           data-options="singleSelect:true,collapsible:true,url:'datagrid_data1.json',fitColumns:'true'"></table>
+</div>
+<!-- 中间的数据展示 -->
+<div id="center" data-options="region:'center',title:'数据展示'">
+    <!-- 资源管理按钮 -->
+    <div id="resourceDataGridToolButton">
+        <a name="add" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-add'">添加</a>
+        <a name="update" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-edit'">更改</a>
+        <a name="remove" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">删除</a>
+        <a name="removeAll" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">清空</a>
+        <a name="downDate" href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-remove'">导出SQl脚本</a>
+    </div>
+    <table id="resourceDataGrid" width="100%"></table>
+    <div id="addDialog" style="padding:3px"></div>
+    <div id="updateDialog" style="padding:3px"></div>
+</div>
+<div data-options="region:'south',title:'执行sql脚本',collapsed:true,expandMode:'float'"  style="width:200px;">
+    <h2>输入区</h2>
+    <textarea id="text_input" rows="10" cols="50">select sql createSql from sqlite_master where type='table'</textarea>
+    <input type="button" id="runSqlBtn" value="执行SQL" style="background:green;color:red;">
+    <textarea id="text_output" rows="15" cols="180"></textarea>
+</div>
+</body>
+</html>
