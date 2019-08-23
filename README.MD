@@ -1,4 +1,4 @@
-ming_mockServer用于在线Mock接口,支持js脚本与json两种响应
+ming_mockServer用于在线Mock接口,支持js脚本与json和sql三种响应
 
 ```bash
   git clone https://github.com/minglie/ming_mockServer.git && cd ming_mockServer && cnpm i && npm run start
