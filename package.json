@@ -4,8 +4,8 @@
   "description": "ming_mockServer用于在线Mock接口,支持js脚本与json两种响应",
   "main": "src/index.js",
   "dependencies": {
-    "ming_node": "^1.2.0",
-    "sqlite3": "^4.0.8"
+    "ming_node": "^1.5.0",
+    "sqlite3": "4.0.8"
   },
   "devDependencies": {},
   "scripts": {

@@ -1,5 +1,5 @@
-2019-8-25 21:07:50  
+2019-11-15 22:27:54  
     select * from sys_server_info  where 1=1   limit  0,10; 
-2019-8-25 21:07:50 
+2019-11-15 22:27:54 
         select count(1) c from sys_server_info  where 1=1 ;
     ; 

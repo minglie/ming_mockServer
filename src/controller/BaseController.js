@@ -1,6 +1,25 @@
-var Db = require("../service/DbService");
 
-module.exports=(app)=>{
+module.exports=(M,Db,app)=>{
+
+    M.database_path="static/M_database.json";
+    M.map_path="static/M_map.json";
+    M.log_path="static/M.log";
+    M.log_console_enable=false;//将日志输出到控制台
+    M.baseInterFaceurl= ["", "/", "/sseServer/","/doSql/", "/sys_server_info/add/", "/sys_server_info/update/", "/sys_server_info/reload/", "/log/clean/", "/log/set_log_enable_status/","/log/get_log_enable_status/"];
+    M.log_req_params_enable=false;
+    Db.display_sql_enable=false;
+    M.console_log=console.log
+    
+    sseApp=M.sseServer()
+    console.log=function (...message) {
+        M.console_log(...message);
+        sseApp.send(JSON.stringify(message[0]));
+    }
+    
+
+    app.get("/sseServer",M.sseServer())
+    
+
     //加载库中接口
     app.loadServiceInfo=async function () {
         //清空现有接口

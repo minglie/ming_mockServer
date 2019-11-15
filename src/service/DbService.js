@@ -1,6 +1,6 @@
 var M=require("ming_node");
 var SQLite3 = require('sqlite3').verbose();
-var Db = new SQLite3.Database("./service/student.db");
+var Db = new SQLite3.Database("./dao/student.db");
 
 
 Db.doSql=function doSql(sql){
