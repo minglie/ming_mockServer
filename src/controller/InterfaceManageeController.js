@@ -1,12 +1,12 @@
 module.exports=(M,app,Db,interfaceManageService)=>{
     
 app.post("/sys_server_info/add",async function (req,res) {
-    let c=await interfaceManageServicecheckSys_server_info(req.params)
+    let c=await interfaceManageService.checkSys_server_info(req.params)
     if(c!=0){
         res.send(M.result("不可定义",false))
         return;
     }
-    interfaceManageServicesetServiceInfo(app,req);
+    interfaceManageService.setServiceInfo(app,req);
     delete req.params.id;
     let sql=M.getInsertObjSql("sys_server_info",req.params);
     let r= await Db.doSql(sql)
@@ -16,12 +16,12 @@ app.post("/sys_server_info/add",async function (req,res) {
 
 
 app.post("/sys_server_info/update",async function (req,res) {
-    let c=await interfaceManageServicecheckSys_server_info(req.params)
+    let c=await interfaceManageService.checkSys_server_info(req.params)
     if(c!=0){
         res.send(M.result("不可定义",false))
         return;
     }
-    interfaceManageServicesetServiceInfo(app,req);
+    interfaceManageService.setServiceInfo(app,req);
     let sql=M.getUpdateObjSql("sys_server_info",req.params);
     let r= await Db.doSql(sql)
     res.send(M.result(r))

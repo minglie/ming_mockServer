@@ -1,6 +1,6 @@
 var Db = require("./DbService")
 
-
+const M=require("ming_node");
 
 service={}
 
