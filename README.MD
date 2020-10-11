@@ -14,6 +14,7 @@ https://github.com/minglie/ming_mockServer_front_end
 # bilibili
 https://www.bilibili.com/video/BV1A4411m7Sx
 
+# 微信公众号例子
 
 ```javascript
 /**
