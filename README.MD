@@ -11,6 +11,9 @@ https://github.com/mucfpga/ming_mockServer_brower_front_end
 #webpack打包前端
 https://github.com/minglie/ming_mockServer_front_end
 
+# bilibili
+https://www.bilibili.com/video/BV1A4411m7Sx
+
 
 ```javascript
 /**
