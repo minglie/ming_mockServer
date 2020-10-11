@@ -1,15 +1,24 @@
 # ming_mockServer用于在线Mock接口,支持js脚本与json和sql三种响应
 
+## 安装
+
+### 方式一 克隆
 ```bash
   git clone https://github.com/minglie/ming_mockServer.git && cd ming_mockServer && cnpm i && npm run start
 ```
+
+# 方式二 下载压缩包
+
+https://vkceyugu.cdn.bspapp.com/VKCEYUGU-server1/c6cd7720-0b77-11eb-9dfb-6da8e309e0d8.zip
 
 
 # 非打包前端
 https://github.com/mucfpga/ming_mockServer_brower_front_end
 
+
 # webpack打包前端
 https://github.com/minglie/ming_mockServer_front_end
+
 
 # bilibili
 https://www.bilibili.com/video/BV1A4411m7Sx
