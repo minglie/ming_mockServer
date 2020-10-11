@@ -7,7 +7,7 @@
   git clone https://github.com/minglie/ming_mockServer.git && cd ming_mockServer && cnpm i && npm run start
 ```
 
-# 方式二 下载压缩包
+### 方式二 下载压缩包
 
 https://vkceyugu.cdn.bspapp.com/VKCEYUGU-server1/c6cd7720-0b77-11eb-9dfb-6da8e309e0d8.zip
 
