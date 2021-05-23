@@ -10,6 +10,11 @@
 ### 方式二 下载压缩包
 
 https://vkceyugu.cdn.bspapp.com/VKCEYUGU-server1/c6cd7720-0b77-11eb-9dfb-6da8e309e0d8.zip
+#### sqlite3可能与当前环境不兼,可能容需要把sqlite3删了再重新安装
+```bash
+   npm uninstall sqlite3
+   npm install sqlite3
+```
 
 
 # 非打包前端
