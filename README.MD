@@ -15,7 +15,8 @@ https://vkceyugu.cdn.bspapp.com/VKCEYUGU-server1/c6cd7720-0b77-11eb-9dfb-6da8e30
    npm uninstall sqlite3
    npm install sqlite3
 ```
-
+### 方式三 实用 ming_api_mock 一键启动
+https://www.yuque.com/docs/share/3c03c64c-4f1d-4144-9f60-5fd82b75a0b0#MxLNb
 
 # 非打包前端
 https://github.com/mucfpga/ming_mockServer_brower_front_end
